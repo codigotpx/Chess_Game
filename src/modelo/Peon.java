@@ -8,6 +8,6 @@ public class Peon extends Ficha{
 
     @Override
     public String getTipoFicha() {
-        return "";
+        return "P";
     }
 }
