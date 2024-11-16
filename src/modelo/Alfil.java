@@ -1,6 +1,11 @@
 package modelo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Alfil extends Ficha {
+
+    private String posicion;
 
     public Alfil(String color) {
         super(color);
@@ -8,27 +13,62 @@ public class Alfil extends Ficha {
 
     @Override
     public String getTipoFicha() {
-        return "B";
+        return "B"; // Representación del alfil
     }
 
+    @Override
+    public String getPosicion() {
+        return posicion;
+    }
 
-    public boolean esMovimientoValido(int filaActual, int colActual, int filaDestino, int colDestino, Ficha[][] tablero) {
-        int diffFila = Math.abs(filaDestino - filaActual);
-        int diffCol = Math.abs(colDestino - colActual);
+    @Override
+    public void setPosicion(String posicion) {
+        this.posicion = posicion;
+    }
 
-        if (diffFila != diffCol) {
-            return false;
-        }
+    @Override
+    public List<String> movimientosValidos(String posicion, Tablero tablero) {
+        List<String> movimientos = new ArrayList<>();
 
+        // Conversión de la posición a coordenadas
+        int columna = posicion.charAt(0) - 'a'; // 'a' a 'h' -> 0 a 7
+        int fila = 8 - Character.getNumericValue(posicion.charAt(1)); // '1' a '8' -> 7 a 0
 
-        int dirFila = (filaDestino > filaActual) ? 1 : -1;
-        int dirCol = (colDestino > colActual) ? 1 : -1;
-        for (int i = 1; i < diffFila; i++) {
-            if (tablero[filaActual + i * dirFila][colActual + i * dirCol] != null) {
-                return false;
+        // Direcciones de movimiento del alfil: diagonales
+        int[][] direcciones = {
+                {-1, -1}, // Arriba a la izquierda
+                {-1, 1},  // Arriba a la derecha
+                {1, -1},  // Abajo a la izquierda
+                {1, 1}    // Abajo a la derecha
+        };
+
+        // Iterar sobre cada dirección
+        for (int[] direccion : direcciones) {
+            int filaActual = fila;
+            int columnaActual = columna;
+
+            // Seguir moviéndose en esta dirección hasta encontrar un obstáculo
+            while (true) {
+                filaActual += direccion[0];
+                columnaActual += direccion[1];
+
+                if (!Tablero.esPosicionValida(filaActual, columnaActual)) {
+                    break; // Fuera del tablero
+                }
+
+                if (tablero.getCasilla(filaActual, columnaActual).getFicha() == null) {
+                    // Casilla vacía, movimiento válido
+                    movimientos.add(tablero.convertirCoordenadasAId(filaActual, columnaActual));
+                } else {
+                    // Casilla ocupada, verificar si se puede capturar
+                    if (!tablero.getCasilla(filaActual, columnaActual).getFicha().getColor().equals(color)) {
+                        movimientos.add(tablero.convertirCoordenadasAId(filaActual, columnaActual));
+                    }
+                    break; // Detenerse al encontrar una pieza
+                }
             }
         }
 
-        return true;
+        return movimientos;
     }
 }

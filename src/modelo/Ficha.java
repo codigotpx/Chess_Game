@@ -1,5 +1,7 @@
 package modelo;
 
+import java.util.List;
+
 public abstract class Ficha {
     protected String color;
 
@@ -24,4 +26,11 @@ public abstract class Ficha {
     }
 
     public abstract String getTipoFicha();
+
+    public abstract String getPosicion();
+
+    public abstract void setPosicion(String posicion);
+
+    // Método abstracto para validar los movimientos
+    public abstract List<String> movimientosValidos(String posicion, Tablero tablero);
 }
