@@ -29,9 +29,10 @@ public class Movimiento {
     }
 
     // Método para procesar el movivimiento
-    public void procesarMovimiento(String mov) {
+    public void procesarMovimiento(String mov, Tablero tablero) {
         tipoFicha = "P";
         destino = null;
+        origenColumna = null;
         enroqueCorto = false;
         enroqueLargo = false;
         jacke = false;
@@ -95,13 +96,61 @@ public class Movimiento {
                 }
             }
         }
-    }
 
-    public void procesarMovimientoSegunPosicion(int numero) {
-        if (numero >= 0 && numero <= movimientos.size()) {
-            procesarMovimiento(movimientos.get(numero));
+        // Si no se especifica el origen, buscarlo en el tablero
+        if (origenColumna == null) {
+            int filaDestino = 8 - Character.getNumericValue(destino.charAt(1));
+            int columnaDestino = destino.charAt(0) - 'a';
+
+            Casilla origen = buscarOrigen(tablero, tipoFicha, filaDestino, columnaDestino);
+            if (origen != null) {
+                origenColumna = origen.getId().charAt(0) + "";
+            }
         }
     }
+
+    public void procesarMovimientoSegunPosicion(int numero, Tablero tablero) {
+
+        procesarMovimiento(movimientos.get(numero), tablero);
+        System.out.printf(movimientos.get(numero) + "\n");
+        if (origenColumna == null) {
+            int filaDestino = 8 - Character.getNumericValue(destino.charAt(1));
+            int columnaDestino = destino.charAt(0) - 'a';
+
+            Casilla origen = buscarOrigen(tablero, tipoFicha, filaDestino, columnaDestino);
+            if (origen != null) {
+                origenColumna = origen.getId().substring(0, 1); // Extrae la columna de origen
+            } else {
+                throw new IllegalStateException("No se encontró una ficha que pueda realizar este movimiento.");
+            }
+        }
+
+    }
+
+    // Método para buscar el origen de una ficha si es que no se puede sacar directamente del PGN
+    private Casilla buscarOrigen(Tablero tablero, String tipoFicha, int filaDestino, int columnaDestino) {
+        for (int fila = 0; fila < 8; fila++) {
+            for (int columna = 0; columna < 8; columna++) {
+                Casilla casilla = tablero.getCasilla(fila, columna);
+                Ficha ficha = casilla.getFicha();
+
+                if (ficha != null && ficha.getTipoFicha().equals(tipoFicha)) {
+                    // Obtener posición actual y movimientos válidos
+                    String posicionActual = tablero.convertirCoordenadasAId(fila, columna);
+                    List<String> movimientosValidos = ficha.movimientosValidos(posicionActual, tablero);
+
+                    // Verificar si el destino está entre los movimientos válidos
+                    String destinoId = tablero.convertirCoordenadasAId(filaDestino, columnaDestino);
+                    if (movimientosValidos.contains(destinoId)) {
+                        return casilla; // Retorna la casilla de origen
+                    }
+                }
+            }
+        }
+        return null; // Ninguna ficha coincide
+    }
+
+
 
     // Métodos para obtener los resultados del movimento que esta siendo procesado
 
@@ -140,4 +189,6 @@ public class Movimiento {
     public boolean isCaptura() {
         return captura;
     }
+
+
 }

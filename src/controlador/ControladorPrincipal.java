@@ -3,10 +3,7 @@ package controlador;
 import funcionalidades.CargarIcon;
 import funcionalidades.CargarPgn;
 
-import modelo.Movimiento;
-import modelo.Rey;
-import modelo.Tablero;
-import modelo.Torre;
+import modelo.*;
 import vista.PanelJuego;
 
 import javax.swing.*;
@@ -28,13 +25,13 @@ public class ControladorPrincipal {
         PanelJuego panelJuego = new PanelJuego(tablero, cargarIcon);
         ControladorJuego controladorJuego = new ControladorJuego(tablero, cargarPgn, panelJuego );
         marco.setContentPane(panelJuego);
-//
-//        Rey rey = new Rey("W");
-//        tablero.getCasilla(2,1).setFicha(rey);
+////
+//        Caballo caballo = new Caballo("W");
+//        tablero.getCasilla(2,1).setFicha(caballo);
 //
 //
 //        // Obtener los movimientos válidos para el peón blanco
-//        List<String> movimientos = rey.movimientosValidos("b6", tablero);
+//        List<String> movimientos = caballo.movimientosValidos("g1", tablero);
 //
 //
 //        // Mostrar los movimientos válidos
@@ -42,5 +39,5 @@ public class ControladorPrincipal {
 //        for (String movimientop : movimientos) {
 //            System.out.println(movimientop);
 //        }
-      }
+    }
 }

@@ -135,4 +135,11 @@ public class PanelJuego extends JPanel {
         }
 
     }
+
+    // Método para actualizar la vista del tablero
+    public void actualizarVistaTablero(Tablero tablero) {
+        this.tablero = tablero;
+        repaint();
+
+    }
 }
