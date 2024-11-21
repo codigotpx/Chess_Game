@@ -22,6 +22,9 @@ public class Torre extends Ficha {
     }
 
     @Override
+    public void cambiarMovimientoRealizado() {}
+
+    @Override
     public void setPosicion(String possicion) {
         this.posicion = possicion;
     }

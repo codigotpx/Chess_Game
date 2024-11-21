@@ -1,7 +1,6 @@
 package modelo;
 
 import funcionalidades.CargarPgn;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,16 +19,46 @@ public class Movimiento {
     private List<String> fichas;
     private boolean captura;
 
-
     public Movimiento(String ruta) {
-        CargarPgn cargarPgn = new CargarPgn();
-        this.movimientos = cargarPgn.obtenerMovimientos(ruta);
         this.cargarPgn = new CargarPgn();
+        this.movimientos = cargarPgn.obtenerMovimientos(ruta);
         this.fichas = Arrays.asList("K", "Q", "R", "B", "N");
     }
 
-    // Método para procesar el movivimiento
-    public void procesarMovimiento(String mov, Tablero tablero) {
+    public void procesarMovimiento(int movovmiento, Tablero tablero) {
+        String mov = movimientos.get(movovmiento);
+
+        System.out.println(mov);
+
+        // Reiniciar todos los atributos
+        reiniciarAtributos();
+
+        // Verificar resultado del juego
+        if (esResultadoJuego(mov)) return;
+
+        // Verificar enroque
+        if (esEnroque(mov)) return;
+
+        // Procesar movimientos según longitud
+        switch (mov.length()) {
+            case 2:
+                procesarMovimientoPeon(mov);
+                break;
+            case 3:
+                procesarMovimientoFicha(mov);
+                break;
+            case 4:
+                procesarMovimientoComplejo(mov);
+                break;
+            case 5:
+                procesarMovimientoComplejo2(mov);
+                break;
+            default:
+                throw new IllegalArgumentException("Movimiento no reconocido: " + mov);
+        }
+    }
+
+    private void reiniciarAtributos() {
         tipoFicha = "P";
         destino = null;
         origenColumna = null;
@@ -39,120 +68,75 @@ public class Movimiento {
         jackeMate = false;
         resultado = null;
         captura = false;
+    }
 
-        // Verificar si es un resultado
+    private boolean esResultadoJuego(String mov) {
         if (mov.equals("1-0") || mov.equals("0-1") || mov.equals("1/2-1/2")) {
             resultado = mov;
-            return;
+            return true;
         }
+        return false;
+    }
 
-        // Verificar si es un enroque corto o largo
+    private boolean esEnroque(String mov) {
         if (mov.equals("O-O")) {
             enroqueCorto = true;
             tipoFicha = "K";
             destino = "O-O";
-            return;
+            return true;
         } else if (mov.equals("O-O-O")) {
             enroqueLargo = true;
             tipoFicha = "K";
             destino = "O-O-O";
-            return;  // Aquí sale del método si es enroque largo
+            return true;
         }
+        return false;
+    }
 
-        // Si el movimiento tiene 2 caracteres, probablemente es un peón moviéndose
-        if (mov.length() == 2) {
-            tipoFicha = "P";
-            origenColumna = String.valueOf(mov.charAt(0));
-            destino = mov;
-            return;
-        }
+    private void procesarMovimientoPeon(String mov) {
+        tipoFicha = "P";
+        origenColumna = String.valueOf(mov.charAt(0));
+        destino = mov;
+    }
 
-        // Si el movimiento tiene 3 caracteres, es una ficha moviéndose
-        if (mov.length() == 3) {
-            tipoFicha = String.valueOf(mov.charAt(0));
-            destino = mov.substring(1);
-            return;
-        }
+    private void procesarMovimientoFicha(String mov) {
+        tipoFicha = String.valueOf(mov.charAt(0));
+        destino = mov.substring(1);
+        System.out.printf(" Tipo " + tipoFicha + " movimieto " + destino + " Origen " + origenColumna + "\n");
+    }
 
-        // Si el movimiento tiene 4 caracteres, podría ser un movimiento con captura
-        if (mov.length() == 4) {
-            if (mov.charAt(1) != 'x') {
-                tipoFicha = String.valueOf(mov.charAt(0));
-                origenColumna = String.valueOf(mov.charAt(1));
+    private void procesarMovimientoComplejo(String mov) {
+        if (mov.charAt(1) == 'x') {
+            if (!fichas.contains(String.valueOf(mov.charAt(0)))) {
+                tipoFicha = "P";
+                origenColumna = String.valueOf(mov.charAt(0));
                 destino = mov.substring(2);
-                return;
+                captura = true;
             } else {
-                if (!fichas.contains(String.valueOf(mov.charAt(0)))) {
-                    tipoFicha = "P";  // Es un peón
-                    origenColumna = String.valueOf(mov.charAt(0));
-                    destino = mov.substring(2);
-                    captura = true;
-                    return;
-                } else {
-                    tipoFicha = String.valueOf(mov.charAt(0));
-                    captura = true;
-                    destino = mov.substring(2);
-                    return;
-                }
+                tipoFicha = String.valueOf(mov.charAt(0));
+                captura = true;
+                destino = mov.substring(2);
             }
+        } else if (mov.charAt(3) == '+') {
+            tipoFicha = String.valueOf(mov.charAt(0));
+            destino = mov.substring(1,3);
+            jacke = true;
+        } else {
+            tipoFicha = String.valueOf(mov.charAt(0));
+            origenColumna = String.valueOf(mov.charAt(1));
+            destino = mov.substring(2);
         }
 
-        // Si no se especifica el origen, buscarlo en el tablero
-        if (origenColumna == null) {
-            int filaDestino = 8 - Character.getNumericValue(destino.charAt(1));
-            int columnaDestino = destino.charAt(0) - 'a';
-
-            Casilla origen = buscarOrigen(tablero, tipoFicha, filaDestino, columnaDestino);
-            if (origen != null) {
-                origenColumna = origen.getId().charAt(0) + "";
-            }
-        }
+        System.out.printf(" Tipo " + tipoFicha + " movimieto " + destino + " Origen " + origenColumna + "\n");
     }
 
-    public void procesarMovimientoSegunPosicion(int numero, Tablero tablero) {
-
-        procesarMovimiento(movimientos.get(numero), tablero);
-        System.out.printf(movimientos.get(numero) + "\n");
-        if (origenColumna == null) {
-            int filaDestino = 8 - Character.getNumericValue(destino.charAt(1));
-            int columnaDestino = destino.charAt(0) - 'a';
-
-            Casilla origen = buscarOrigen(tablero, tipoFicha, filaDestino, columnaDestino);
-            if (origen != null) {
-                origenColumna = origen.getId().substring(0, 1); // Extrae la columna de origen
-            } else {
-                throw new IllegalStateException("No se encontró una ficha que pueda realizar este movimiento.");
-            }
-        }
-
+    public void procesarMovimientoComplejo2(String mov) {
+        tipoFicha = String.valueOf(mov.charAt(0));
+        captura = true;
+        destino = mov.substring(2,4);
     }
 
-    // Método para buscar el origen de una ficha si es que no se puede sacar directamente del PGN
-    private Casilla buscarOrigen(Tablero tablero, String tipoFicha, int filaDestino, int columnaDestino) {
-        for (int fila = 0; fila < 8; fila++) {
-            for (int columna = 0; columna < 8; columna++) {
-                Casilla casilla = tablero.getCasilla(fila, columna);
-                Ficha ficha = casilla.getFicha();
-
-                if (ficha != null && ficha.getTipoFicha().equals(tipoFicha)) {
-                    // Obtener posición actual y movimientos válidos
-                    String posicionActual = tablero.convertirCoordenadasAId(fila, columna);
-                    List<String> movimientosValidos = ficha.movimientosValidos(posicionActual, tablero);
-
-                    // Verificar si el destino está entre los movimientos válidos
-                    String destinoId = tablero.convertirCoordenadasAId(filaDestino, columnaDestino);
-                    if (movimientosValidos.contains(destinoId)) {
-                        return casilla; // Retorna la casilla de origen
-                    }
-                }
-            }
-        }
-        return null; // Ninguna ficha coincide
-    }
-
-
-
-    // Métodos para obtener los resultados del movimento que esta siendo procesado
+    // [Resto de los métodos originales se mantienen igual]
 
     public String getTipoFicha() {
         return tipoFicha;
@@ -189,6 +173,5 @@ public class Movimiento {
     public boolean isCaptura() {
         return captura;
     }
-
 
 }

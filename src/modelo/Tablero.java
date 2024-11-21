@@ -7,11 +7,13 @@ public class Tablero {
    private Casilla[][] tablero;
    private List<String> posicionInicial;
    private int tamañoTablero;
+    private boolean verificandoAtaque;
 
     public Tablero() {
         this.tablero = new Casilla[8][8];
         this.posicionInicial = new ArrayList<>(List.of("R","N","B","Q","K","B","N","R"));
         this.tamañoTablero = 400;
+        verificandoAtaque = false;
         inicializarTablero();
     }
 
@@ -60,35 +62,41 @@ public class Tablero {
     }
 
     public boolean estaBajoAtaque(int fila, int columna, String colorRey) {
+        if (verificandoAtaque) {
+            return false; // Evitar recursión infinita
+        }
+
+        verificandoAtaque = true;
+
         String idCasilla = convertirCoordenadasAId(fila, columna);
 
         // Obtener todas las piezas enemigas
         List<Ficha> piezasEnemigas = obtenerFichasDelOponente(colorRey);
 
         for (Ficha ficha : piezasEnemigas) {
-            // Obtener la posición actual de la ficha
-            String posicionFicha = ficha.getPosicion(); // Método existente que da posición como "b5"
+            String posicionFicha = ficha.getPosicion();
             int columnaFicha = posicionFicha.charAt(0) - 'a';
             int filaFicha = 8 - Character.getNumericValue(posicionFicha.charAt(1));
 
             if (ficha instanceof Peon) {
                 // Evaluar ataques de peones
                 int direccion = ficha.getColor().equals("W") ? -1 : 1;
-
-                // Peones atacan en diagonales hacia adelante
                 if (fila == filaFicha + direccion &&
                         (columna == columnaFicha - 1 || columna == columnaFicha + 1)) {
+                    verificandoAtaque = false;
                     return true; // La casilla está bajo ataque de un peón
                 }
             } else {
                 // Evaluar movimientos válidos de otras piezas
                 List<String> movimientos = ficha.movimientosValidos(posicionFicha, this);
                 if (movimientos.contains(idCasilla)) {
+                    verificandoAtaque = false;
                     return true; // La casilla está bajo ataque de esta pieza
                 }
             }
         }
 
+        verificandoAtaque = false;
         return false; // Ninguna pieza enemiga amenaza la casilla
     }
 

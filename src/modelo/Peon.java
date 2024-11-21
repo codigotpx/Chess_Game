@@ -26,6 +26,11 @@ public class Peon extends Ficha {
     }
 
     @Override
+    public void cambiarMovimientoRealizado() {
+        this.primerMovimiento = false;
+    }
+
+    @Override
     public void setPosicion(String posicion) {
         this.posicion = posicion;
     }
@@ -75,9 +80,6 @@ public class Peon extends Ficha {
                 !tablero.getCasilla(fila + direccion, columna + 1).getFicha().getColor().equals(color)) {
             movimientos.add(tablero.convertirCoordenadasAId(fila + direccion, columna + 1));
         }
-
-        // Después de que el peón se mueva, cambiar a false, ya no podrá moverse dos casillas en el futuro
-        primerMovimiento = false;
 
         return movimientos;
     }

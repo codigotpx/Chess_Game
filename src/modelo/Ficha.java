@@ -31,6 +31,8 @@ public abstract class Ficha {
 
     public abstract void setPosicion(String posicion);
 
+    public abstract void cambiarMovimientoRealizado();
+
     // Método abstracto para validar los movimientos
     public abstract List<String> movimientosValidos(String posicion, Tablero tablero);
 }

@@ -8,7 +8,6 @@ import modelo.Tablero;
 import vista.PanelJuego;
 
 import javax.swing.*;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.List;
 
@@ -18,6 +17,8 @@ public class ControladorJuego {
     private PanelJuego panelJuego;
     private Movimiento movimiento;
     private int numeroMovimiento;
+    private boolean isBlanca; // true: blanca false: negro
+    private String colorActual;
 
 
     public ControladorJuego(Tablero tablero, CargarPgn cargarPgn, PanelJuego panelJuego) {
@@ -26,6 +27,8 @@ public class ControladorJuego {
         this.panelJuego = panelJuego;
         this.movimiento = null;
         this.numeroMovimiento = 0;
+        this.isBlanca = true;
+        this.colorActual = "";
 
         iniciarListener();
     }
@@ -51,6 +54,8 @@ public class ControladorJuego {
         numeroMovimiento++;
     }
 
+
+
     public void retrocederMovimeinto() {
         // Lógica oara retroceder el movimiento
     }
@@ -71,7 +76,7 @@ public class ControladorJuego {
 
     public void ejecutarMovimiento(int numeroMovimiento) {
         // Procesar el movimiento actual usando la clase Movimiento
-        movimiento.procesarMovimientoSegunPosicion(numeroMovimiento, tablero);
+        movimiento.procesarMovimiento(numeroMovimiento, tablero);
 
         // Obtener los datos procesados
         String tipoFicha = movimiento.getTipoFicha();
@@ -89,7 +94,8 @@ public class ControladorJuego {
 
         // Manejar enroques
         if (enroqueCorto || enroqueLargo) {
-            manejarEnroque(enroqueCorto, enroqueLargo);
+            cambiarColorMovimiento();
+            manejarEnroque(enroqueCorto, enroqueLargo, isBlanca);
             return;
         }
 
@@ -106,10 +112,17 @@ public class ControladorJuego {
         }
 
         // Mover la ficha en el modelo
+        if (tipoFicha == "P") {
+            origen.getFicha().cambiarMovimientoRealizado();
+        }
         Casilla destinoCasilla = tablero.getCasilla(filaDestino, columnaDestino);
         destinoCasilla.setFicha(origen.getFicha()); // Mover la ficha a la casilla destino
         destinoCasilla.getFicha().setPosicion(destino); // Actualizar la posición de la ficha
-        origen.setFicha(null); // Vaciar la casilla de origen
+        origen.setFicha(null); // Vaciar la casilla de orige
+
+        cambiarColorMovimiento();
+
+
 
         // Actualizar la vista
         panelJuego.actualizarVistaTablero(tablero);
@@ -119,12 +132,15 @@ public class ControladorJuego {
     }
 
     private Casilla encontrarCasillaOrigen(String tipoFicha, String origenColumna, int filaDestino, int columnaDestino, boolean captura) {
+
+        colorActual = isBlanca ? "W" : "B";
+
         for (int fila = 0; fila < 8; fila++) {
             for (int columna = 0; columna < 8; columna++) {
                 Casilla casilla = tablero.getCasilla(fila, columna);
                 Ficha ficha = casilla.getFicha();
 
-                if (ficha != null && ficha.getTipoFicha().equals(tipoFicha)) {
+                if (ficha != null && ficha.getTipoFicha().equals(tipoFicha) && ficha.getColor().equals(colorActual)) {
                     // Validar que la ficha pueda llegar a la casilla destino
                     String posicionActual = tablero.convertirCoordenadasAId(fila, columna);
                     List<String> movimientosValidos = ficha.movimientosValidos(posicionActual, tablero);
@@ -144,34 +160,36 @@ public class ControladorJuego {
         return null; // No se encontró una ficha válida
     }
 
-    private void manejarEnroque(boolean enroqueCorto, boolean enroqueLargo) {
+    private void manejarEnroque(boolean enroqueCorto, boolean enroqueLargo, boolean esBlanca) {
+        int fila = esBlanca ? 0 : 7; // Fila 7 para blancas, fila 0 para negras
+
         if (enroqueCorto) {
             // Mover el rey y la torre para el enroque corto
-            tablero.getCasilla(7, 6).setFicha(tablero.getCasilla(7, 4).getFicha());
-            tablero.getCasilla(7, 6).getFicha().setPosicion("g1");
-            tablero.getCasilla(7, 4).setFicha(null);
+            tablero.getCasilla(fila, 6).setFicha(tablero.getCasilla(fila, 4).getFicha());
+            tablero.getCasilla(fila, 6).getFicha().setPosicion(esBlanca ? "g1" : "g8");
+            tablero.getCasilla(fila, 4).setFicha(null);
 
-            tablero.getCasilla(7, 5).setFicha(tablero.getCasilla(7, 7).getFicha());
-            tablero.getCasilla(7, 5).getFicha().setPosicion("f1");
-            tablero.getCasilla(7, 7).setFicha(null);
+            tablero.getCasilla(fila, 5).setFicha(tablero.getCasilla(fila, 7).getFicha());
+            tablero.getCasilla(fila, 5).getFicha().setPosicion(esBlanca ? "f1" : "f8");
+            tablero.getCasilla(fila, 7).setFicha(null);
         } else if (enroqueLargo) {
             // Mover el rey y la torre para el enroque largo
-            tablero.getCasilla(7, 2).setFicha(tablero.getCasilla(7, 4).getFicha());
-            tablero.getCasilla(7, 2).getFicha().setPosicion("c1");
-            tablero.getCasilla(7, 4).setFicha(null);
+            tablero.getCasilla(fila, 2).setFicha(tablero.getCasilla(fila, 4).getFicha());
+            tablero.getCasilla(fila, 2).getFicha().setPosicion(esBlanca ? "c1" : "c8");
+            tablero.getCasilla(fila, 4).setFicha(null);
 
-            tablero.getCasilla(7, 3).setFicha(tablero.getCasilla(7, 0).getFicha());
-            tablero.getCasilla(7, 3).getFicha().setPosicion("d1");
-            tablero.getCasilla(7, 0).setFicha(null);
+            tablero.getCasilla(fila, 3).setFicha(tablero.getCasilla(fila, 0).getFicha());
+            tablero.getCasilla(fila, 3).getFicha().setPosicion(esBlanca ? "d1" : "d8");
+            tablero.getCasilla(fila, 0).setFicha(null);
         }
 
-        // Actualizar la vista
+
+    // Actualizar la vista
         panelJuego.actualizarVistaTablero(tablero);
         JOptionPane.showMessageDialog(panelJuego, "Enroque realizado.");
     }
 
-
-
-
-
+    public void cambiarColorMovimiento() {
+        isBlanca = !isBlanca;
+    }
 }

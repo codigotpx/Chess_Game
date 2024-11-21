@@ -22,6 +22,9 @@ public class Dama extends Ficha {
     }
 
     @Override
+    public void cambiarMovimientoRealizado() {}
+
+    @Override
     public void setPosicion(String posicion) {
         this.posicion = posicion;
     }
@@ -56,19 +59,26 @@ public class Dama extends Ficha {
                 filaActual += direccion[0];
                 columnaActual += direccion[1];
 
+                // Verificar si la posición está dentro del tablero
                 if (!Tablero.esPosicionValida(filaActual, columnaActual)) {
                     break; // Fuera del tablero
                 }
 
-                if (tablero.getCasilla(filaActual, columnaActual).getFicha() == null) {
-                    // Casilla vacía, movimiento válido
+                Casilla casillaActual = tablero.getCasilla(filaActual, columnaActual);
+                Ficha fichaEnCasilla = casillaActual.getFicha();
+
+                // Si la casilla está vacía, es un movimiento válido
+                if (fichaEnCasilla == null) {
                     movimientos.add(tablero.convertirCoordenadasAId(filaActual, columnaActual));
-                } else {
-                    // Casilla ocupada, verificar si se puede capturar
-                    if (!tablero.getCasilla(filaActual, columnaActual).getFicha().getColor().equals(color)) {
+                }
+                // Si hay una ficha, verificar si se puede capturar
+                else {
+                    // Solo agregar si la ficha es de color diferente
+                    if (!fichaEnCasilla.getColor().equals(this.color)) {
                         movimientos.add(tablero.convertirCoordenadasAId(filaActual, columnaActual));
                     }
-                    break; // Detenerse al encontrar una pieza
+                    // Detener la búsqueda en esta dirección después de encontrar una pieza
+                    break;
                 }
             }
         }

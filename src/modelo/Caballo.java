@@ -22,6 +22,9 @@ public class Caballo extends Ficha {
     }
 
     @Override
+    public void cambiarMovimientoRealizado() {}
+
+    @Override
     public void setPosicion(String posicion) {
         this.posicion = posicion;
     }

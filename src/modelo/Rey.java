@@ -4,17 +4,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Rey extends Ficha {
+    private boolean primerMovimiento;
 
     private String posicion;
 
     public Rey(String color) {
         super(color);
+
+        this.primerMovimiento = true;
     }
 
     @Override
     public String getTipoFicha() {
         return "K"; // Representación del rey
     }
+
+    @Override
+    public void cambiarMovimientoRealizado() {}
 
     @Override
     public void setPosicion(String possicion) {
@@ -64,6 +70,8 @@ public class Rey extends Ficha {
                 }
             }
         }
+
+        this.primerMovimiento = true;
 
         return movimientos;
     }
