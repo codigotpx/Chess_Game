@@ -6,6 +6,7 @@ import modelo.Ficha;
 import modelo.Movimiento;
 import modelo.Tablero;
 import vista.PanelJuego;
+import vista.TableroBoton;
 
 import javax.swing.*;
 import java.io.File;
@@ -14,7 +15,7 @@ import java.util.List;
 public class ControladorJuego {
     private Tablero tablero;
     private CargarPgn cargarPgn;
-    private PanelJuego panelJuego;
+    PanelJuego panelJuego;
     private Movimiento movimiento;
     private int numeroMovimiento;
     private boolean isBlanca; // true: blanca false: negro
@@ -29,6 +30,7 @@ public class ControladorJuego {
         this.numeroMovimiento = 0;
         this.isBlanca = true;
         this.colorActual = "";
+
 
         iniciarListener();
     }

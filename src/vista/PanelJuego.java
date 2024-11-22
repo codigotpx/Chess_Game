@@ -140,6 +140,5 @@ public class PanelJuego extends JPanel {
     public void actualizarVistaTablero(Tablero tablero) {
         this.tablero = tablero;
         repaint();
-
     }
 }
