@@ -477,6 +477,4 @@ public class ControladorJuegoE {
             JOptionPane.showMessageDialog(null, "Error al guardar la partida: " + e.getMessage());
         }
     }
-
-
 }
