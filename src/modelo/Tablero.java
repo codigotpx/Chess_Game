@@ -60,6 +60,16 @@ public class Tablero {
         int numeroFila = 8 - fila; // 0 -> 8, 1 -> 7, ..., 7 -> 1
         return "" + letraColumna + numeroFila;
     }
+    public int[] convertirIdACoordenadas(String id) {
+        char letraColumna = id.charAt(0); // e.g., 'e'
+        int numeroFila = Character.getNumericValue(id.charAt(1)); // e.g., 4
+        int columna = letraColumna - 'a';
+        int fila = 8 - numeroFila;
+        return new int[]{fila, columna};
+    }
+
+
+
 
     public boolean estaBajoAtaque(int fila, int columna, String colorRey) {
         if (verificandoAtaque) {

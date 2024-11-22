@@ -1,5 +1,6 @@
 package vista;
 
+import funcionalidades.CargarFondo;
 import funcionalidades.CargarIcon;
 import modelo.Ficha;
 import modelo.Tablero;
@@ -19,10 +20,15 @@ public class PanelJuego extends JPanel {
     private JButton botonRetroceder;
     private JButton botonSiguiente;
     private JButton botonCargarPGN;
+    private Image fondo;
+    private CargarFondo cargarFondo;
 
-    public PanelJuego(Tablero tablero, CargarIcon cargarIcon) {
+    public PanelJuego(Tablero tablero, CargarIcon cargarIcon, CargarFondo cargarFondo) {
         this.tablero = tablero;
         this.cargarIcon = cargarIcon;
+        this.cargarFondo = cargarFondo;
+
+        fondo = cargarFondo.setFondo("resources/imagenes/fondos/fondo2.png");
 
         botonSiguiente = new JButton("Siguiente");
         botonRetroceder = new JButton("Retroceder");
@@ -50,6 +56,8 @@ public class PanelJuego extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        g.drawImage(fondo, 0, 0, getWidth(), getHeight(), null);
+
         int tamañoCelda = tablero.getTamañoCelda();
 
         // Calcular el inicio para centrar el tablero en el panel
@@ -63,9 +71,9 @@ public class PanelJuego extends JPanel {
 
                 // Alternar colores de las celdas
                 if ((fila + col) % 2 == 0) {
-                    g.setColor(new Color(120, 73, 57, 255)); // Color oscuro
+                    g.setColor(new Color(235,237,209,255)); // Color oscuro
                 } else {
-                    g.setColor(new Color(92, 51, 49, 255)); // Color claro
+                    g.setColor(new Color(119,149,86,255)); // Color claro
                 }
 
                 // Dibujar la celda
