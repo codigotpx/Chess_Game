@@ -6,21 +6,25 @@ import modelo.Ficha;
 import modelo.Movimiento;
 import modelo.Tablero;
 import vista.PanelJuego;
-import vista.TableroBoton;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ControladorJuego {
     private Tablero tablero;
     private CargarPgn cargarPgn;
-    PanelJuego panelJuego;
+    private PanelJuego panelJuego;
     private Movimiento movimiento;
     private int numeroMovimiento;
     private boolean isBlanca; // true: blanca false: negro
     private String colorActual;
 
+    // Lista para almacenar los estados previos del tablero
+    private List<Tablero> historialTableros;
+    // Lista para almacenar los estados previos de las fichas capturadas
+    private List<Casilla> historialCapturadas;
 
     public ControladorJuego(Tablero tablero, CargarPgn cargarPgn, PanelJuego panelJuego) {
         this.tablero = tablero;
@@ -31,6 +35,9 @@ public class ControladorJuego {
         this.isBlanca = true;
         this.colorActual = "";
 
+        // Inicializar listas de historial
+        this.historialTableros = new ArrayList<>();
+        this.historialCapturadas = new ArrayList<>();
 
         iniciarListener();
     }
@@ -47,6 +54,28 @@ public class ControladorJuego {
     }
 
 
+    // Método existente de cargar archivo PGN
+    public void cargarArchivoPGN() {
+        JFileChooser fileChooser = new JFileChooser();
+        int seleccion = fileChooser.showOpenDialog(panelJuego);
+
+        if (seleccion == JFileChooser.APPROVE_OPTION) {
+            File archivoPGN = fileChooser.getSelectedFile();
+            String ruta = archivoPGN.getAbsolutePath();
+            movimiento = new Movimiento(ruta);
+            JOptionPane.showMessageDialog(panelJuego, "Archivo PGN cargado exitosamente.");
+
+            // Limpiar historial al cargar un nuevo archivo
+            historialTableros.clear();
+            historialCapturadas.clear();
+
+            tablero.inicializarTablero();
+            panelJuego.reiniciarTablero(tablero);
+            numeroMovimiento = 0;
+            isBlanca = true;
+        }
+    }
+
     public void avanzarMovimeinto() {
         if (movimiento == null) {
             JOptionPane.showMessageDialog(panelJuego, "No se ha cargado un archivo PGN.");
@@ -56,32 +85,66 @@ public class ControladorJuego {
         numeroMovimiento++;
     }
 
-
-
-    public void retrocederMovimeinto() {
-        // Lógica oara retroceder el movimiento
-    }
-
-    public void cargarArchivoPGN() {
-        // lógica para cargar el archivo PGN}
-        JFileChooser fileChooser = new JFileChooser();
-        int seleccion = fileChooser.showOpenDialog(panelJuego);
-
-        if (seleccion == JFileChooser.APPROVE_OPTION) {
-            File archivoPGN = fileChooser.getSelectedFile();
-            String ruta = archivoPGN.getAbsolutePath();
-            movimiento = new Movimiento(ruta);
-            JOptionPane.showMessageDialog(panelJuego, "Archivo PGN cargado exitosamente.");
-            tablero.inicializarTablero();
-            panelJuego.reiniciarTablero(tablero);
-            numeroMovimiento = 0;
-            isBlanca= true;
-
-        }
-    }
-
+    // Método modificado para guardar el estado anterior antes de cada movimiento
     public void ejecutarMovimiento(int numeroMovimiento) {
+        // Guardar el estado actual del tablero antes de ejecutar el movimiento
+        historialTableros.add(copiarTablero(tablero));
+
         // Procesar el movimiento actual usando la clase Movimiento
+        Casilla casillaCapturada = procesarMovimientoConCaptura(numeroMovimiento);
+
+        // Actualizar la vista
+        panelJuego.actualizarVistaTablero(tablero);
+    }
+
+    // Método para retroceder movimientos
+    public void retrocederMovimeinto() {
+        if (historialTableros.isEmpty() || numeroMovimiento <= 0) {
+            JOptionPane.showMessageDialog(panelJuego, "No hay movimientos anteriores para retroceder.");
+            return;
+        }
+
+        // Restaurar el último estado del tablero
+        tablero = historialTableros.remove(historialTableros.size() - 1);
+
+        // Restaurar ficha capturada si existía
+        if (!historialCapturadas.isEmpty()) {
+            Casilla casillaCapturada = historialCapturadas.remove(historialCapturadas.size() - 1);
+            if (casillaCapturada != null && casillaCapturada.getFicha() != null) {
+                // Restaurar la casilla capturada en su posición original
+                tablero.getCasillaPorId(casillaCapturada.getId()).setFicha(casillaCapturada.getFicha());
+            }
+        }
+
+        // Actualizar la vista
+        panelJuego.reiniciarTablero(tablero);
+
+        // Decrementar contador de movimientos y cambiar color
+        numeroMovimiento--;
+        cambiarColorMovimiento();
+    }
+
+    // Método auxiliar para copiar el tablero
+    private Tablero copiarTablero(Tablero tableroOriginal) {
+        Tablero tableroCopiado = new Tablero();
+        for (int fila = 0; fila < 8; fila++) {
+            for (int columna = 0; columna < 8; columna++) {
+                Casilla casillaOriginal = tableroOriginal.getCasilla(fila, columna);
+                Casilla casillaCopia = tableroCopiado.getCasilla(fila, columna);
+
+                if (casillaOriginal.getFicha() != null) {
+                    Ficha fichaCopia = Ficha.crearPieza(casillaCopia.getFicha().getTipoFicha(), casillaOriginal.getFicha().getColor());
+                    fichaCopia.setPosicion(casillaOriginal.getFicha().getPosicion());
+                    casillaCopia.setFicha(fichaCopia);
+                }
+            }
+        }
+        return tableroCopiado;
+    }
+
+    // Método modificado para manejar capturas
+    private Casilla procesarMovimientoConCaptura(int numeroMovimiento) {
+        // Procesar el movimiento
         movimiento.procesarMovimiento(numeroMovimiento, tablero);
 
         // Obtener los datos procesados
@@ -103,14 +166,14 @@ public class ControladorJuego {
             };
 
             JOptionPane.showMessageDialog(panelJuego, mensaje);
-            return; // Termina el método para evitar más procesamiento
+            return null;
         }
 
         // Manejar enroques
         if (enroqueCorto || enroqueLargo) {
             cambiarColorMovimiento();
             manejarEnroque(enroqueCorto, enroqueLargo, isBlanca);
-            return;
+            return null;
         }
 
         // Obtener las coordenadas de la casilla de destino
@@ -122,25 +185,31 @@ public class ControladorJuego {
 
         if (origen == null) {
             JOptionPane.showMessageDialog(panelJuego, "Movimiento inválido. No se encontró una ficha adecuada para mover.");
-            return;
+            return null;
+        }
+
+        // Manejar captura
+        Casilla destinoCasilla = tablero.getCasilla(filaDestino, columnaDestino);
+        Casilla casillaCapturada = null;
+        if (destinoCasilla.getFicha() != null) {
+            casillaCapturada = new Casilla(destinoCasilla.getId());
+            casillaCapturada.setFicha(destinoCasilla.getFicha());
+            historialCapturadas.add(casillaCapturada);
         }
 
         // Mover la ficha en el modelo
-        if (tipoFicha == "P") {
+        if (tipoFicha.equals("P")) {
             origen.getFicha().cambiarMovimientoRealizado();
         }
-        Casilla destinoCasilla = tablero.getCasilla(filaDestino, columnaDestino);
         destinoCasilla.setFicha(origen.getFicha()); // Mover la ficha a la casilla destino
         destinoCasilla.getFicha().setPosicion(destino); // Actualizar la posición de la ficha
-        origen.setFicha(null); // Vaciar la casilla de orige
+        origen.setFicha(null); // Vaciar la casilla de origen
 
         cambiarColorMovimiento();
 
-
-
-        // Actualizar la vista
-        panelJuego.actualizarVistaTablero(tablero);
+        return casillaCapturada;
     }
+
 
     private Casilla encontrarCasillaOrigen(String tipoFicha, String origenColumna, int filaDestino, int columnaDestino, boolean captura) {
 
@@ -195,7 +264,7 @@ public class ControladorJuego {
         }
 
 
-    // Actualizar la vista
+        // Actualizar la vista
         panelJuego.actualizarVistaTablero(tablero);
         JOptionPane.showMessageDialog(panelJuego, "Enroque realizado.");
     }
