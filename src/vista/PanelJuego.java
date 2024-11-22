@@ -149,4 +149,9 @@ public class PanelJuego extends JPanel {
         this.tablero = tablero;
         repaint();
     }
+
+    public void reiniciarTablero(Tablero tablero) {
+        this.tablero = tablero;
+        repaint();
+    }
 }

@@ -18,7 +18,7 @@ public class Tablero {
     }
 
     // Método para inicializar el tablero
-    private void inicializarTablero() {
+    public void inicializarTablero() {
         for (int fila = 0; fila < 8; fila++) {
             for(int col = 0; col < 8; col++) {
                 String id = (char)('a' + col) + String.valueOf(8 - fila);
@@ -45,6 +45,20 @@ public class Tablero {
     public Casilla getCasilla(int fila, int columna) {
         return tablero[fila][columna];
     }
+
+    // Método para obtener la casilla dado su ID (por ejemplo, "a1", "e4")
+    public Casilla getCasillaPorId(String id) {
+        int[] coordenadas = convertirIdACoordenadas(id);
+        int fila = coordenadas[0];
+        int columna = coordenadas[1];
+
+        // Asegurarse de que las coordenadas son válidas
+        if (esPosicionValida(fila, columna)) {
+            return getCasilla(fila, columna);
+        }
+        return null;
+    }
+
 
     // Método para obtener el tamaño de las celdass
     public int getTamañoCelda() {
@@ -85,6 +99,9 @@ public class Tablero {
 
         for (Ficha ficha : piezasEnemigas) {
             String posicionFicha = ficha.getPosicion();
+            if (posicionFicha == null) {
+                continue;
+            }
             int columnaFicha = posicionFicha.charAt(0) - 'a';
             int filaFicha = 8 - Character.getNumericValue(posicionFicha.charAt(1));
 

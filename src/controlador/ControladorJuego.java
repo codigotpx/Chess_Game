@@ -72,6 +72,10 @@ public class ControladorJuego {
             String ruta = archivoPGN.getAbsolutePath();
             movimiento = new Movimiento(ruta);
             JOptionPane.showMessageDialog(panelJuego, "Archivo PGN cargado exitosamente.");
+            tablero.inicializarTablero();
+            panelJuego.reiniciarTablero(tablero);
+            numeroMovimiento = 0;
+            isBlanca= true;
 
         }
     }
@@ -84,14 +88,22 @@ public class ControladorJuego {
         String tipoFicha = movimiento.getTipoFicha();
         String destino = movimiento.getDestino();
         String origenColumna = movimiento.getOrigenColumna();
+        String resultado = movimiento.getResultado();
         boolean captura = movimiento.isCaptura();
         boolean enroqueCorto = movimiento.isEnroqueCorto();
         boolean enroqueLargo = movimiento.isEnroqueLargo();
 
-        // Manejar resultados especiales
-        if (movimiento.getResultado() != null) {
-            JOptionPane.showMessageDialog(panelJuego, "Resultado de la partida: " + movimiento.getResultado());
-            return;
+        // Manejar resultados finales
+        if (resultado != null && (resultado.equals("1-0") || resultado.equals("0-1") || resultado.equals("1/2-1/2"))) {
+            String mensaje = switch (resultado) {
+                case "1-0" -> "¡Las blancas ganan!";
+                case "0-1" -> "¡Las negras ganan!";
+                case "1/2-1/2" -> "¡Es un empate!";
+                default -> "Resultado desconocido.";
+            };
+
+            JOptionPane.showMessageDialog(panelJuego, mensaje);
+            return; // Termina el método para evitar más procesamiento
         }
 
         // Manejar enroques
@@ -128,9 +140,6 @@ public class ControladorJuego {
 
         // Actualizar la vista
         panelJuego.actualizarVistaTablero(tablero);
-
-        // Mensaje de confirmación
-        JOptionPane.showMessageDialog(panelJuego, "Movimiento realizado: " + tipoFicha + " a " + destino);
     }
 
     private Casilla encontrarCasillaOrigen(String tipoFicha, String origenColumna, int filaDestino, int columnaDestino, boolean captura) {

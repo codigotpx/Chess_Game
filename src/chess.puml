@@ -1,0 +1,295 @@
+@startuml
+
+package "modelo" {
+    abstract class Ficha {
+            - color: String
+            + Ficha(color: String)
+            + getColor(): String
+            + getTipoFicha(): String
+            + getPosicion(): String
+            + setPosicion(posicion: String): void
+            + cambiarMovimientoRealizado(): void
+            + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+            + crearPieza(tipoPieza: String, color: String): Ficha
+        }
+
+    class Alfil {
+            - posicion: String
+            + Alfil(color: String)
+            + getTipoFicha(): String
+            + getPosicion(): String
+            + cambiarMovimientoRealizado(): void
+            + setPosicion(posicion: String): void
+            + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+        }
+
+    class Caballo {
+            - posicion: String
+            + Caballo(color: String)
+            + getTipoFicha(): String
+            + getPosicion(): String
+            + cambiarMovimientoRealizado(): void
+            + setPosicion(posicion: String): void
+            + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+        }
+
+    class Casilla {
+            - ficha: Ficha
+            - id: String
+            + Casilla(id: String)
+            + setFicha(ficha: Ficha): void
+            + getFicha(): Ficha
+            + getId(): String
+        }
+
+    class Dama {
+            - posicion: String
+            + Dama(color: String)
+            + getTipoFicha(): String
+            + getPosicion(): String
+            + cambiarMovimientoRealizado(): void
+            + setPosicion(posicion: String): void
+            + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+        }
+
+    class Peon {
+            - posicion: String
+            - primerMovimiento: boolean
+            + Peon(color: String)
+            + getTipoFicha(): String
+            + getPosicion(): String
+            + cambiarMovimientoRealizado(): void
+            + setPosicion(posicion: String): void
+            + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+        }
+
+    class Rey {
+            - primerMovimiento: boolean
+            - posicion: String
+            + Rey(color: String)
+            + getTipoFicha(): String
+            + cambiarMovimientoRealizado(): void
+            + setPosicion(posicion: String): void
+            + getPosicion(): String
+            + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+        }
+
+    class Tablero {
+            - tablero: Casilla[][]
+            - posicionInicial: List<String>
+            - tamañoTablero: int
+            - verificandoAtaque: boolean
+            + Tablero()
+            + inicializarTablero(): void
+            + getCasilla(fila: int, columna: int): Casilla
+            + getTamañoCelda(): int
+            + esPosicionValida(fila: int, columna: int): boolean
+            + convertirCoordenadasAId(fila: int, columna: int): String
+            + convertirIdACoordenadas(id: String): int[]
+            + estaBajoAtaque(fila: int, columna: int, colorRey: String): boolean
+            + obtenerFichasDelOponente(colorRey: String): List<Ficha>
+        }
+
+
+
+
+
+
+    class Movimiento {
+            - movimientos: List<String>
+            - cargarPgn: CargarPgn
+            - destino: String
+            - origenColumna: String
+            - tipoFicha: String
+            - enroqueCorto: boolean
+            - enroqueLargo: boolean
+            - jacke: boolean
+            - jackeMate: boolean
+            - resultado: String
+            - fichas: List<String>
+            - captura: boolean
+            + Movimiento(ruta: String)
+            + procesarMovimiento(movimiento: int, tablero: Tablero): void
+            - reiniciarAtributos(): void
+            - esResultadoJuego(mov: String): boolean
+            - esEnroque(mov: String): boolean
+            - procesarMovimientoPeon(mov: String): void
+            - procesarMovimientoFicha(mov: String): void
+            - procesarMovimientoComplejo(mov: String): void
+            + procesarMovimientoComplejo2(mov: String): void
+            + getTipoFicha(): String
+            + getDestino(): String
+            + getOrigenColumna(): String
+            + isEnroqueCorto(): boolean
+            + isEnroqueLargo(): boolean
+            + isJacke(): boolean
+            + isJackeMate(): boolean
+            + getResultado(): String
+            + isCaptura(): boolean
+        }
+    class Torre {
+           - posicion: String
+           + Torre(color: String)
+           + getTipoFicha(): String
+           + getPosicion(): String
+           + cambiarMovimientoRealizado(): void
+           + setPosicion(possicion: String): void
+           + movimientosValidos(posicion: String, tablero: Tablero): List<String>
+       }
+
+    Alfil -|> Ficha
+    Caballo -|> Ficha
+    Dama -|> Ficha
+    Peon -|> Ficha
+    Rey -|> Ficha
+    Torre -|> Ficha
+}
+
+package "controlador" {
+    class ControladorJuego {
+        - tablero: Tablero
+        - cargarPgn: CargarPgn
+        - panelJuego: PanelJuego
+        - movimiento: Movimiento
+        - numeroMovimiento: int
+        - isBlanca: boolean
+        - colorActual: String
+        + ControladorJuego(tablero: Tablero, cargarPgn: CargarPgn, panelJuego: PanelJuego)
+        + avanzarMovimeinto(): void
+        + retrocederMovimeinto(): void
+        + cargarArchivoPGN(): void
+        + ejecutarMovimiento(numeroMovimiento: int): void
+        - iniciarListener(): void
+        - encontrarCasillaOrigen(tipoFicha: String, origenColumna: String, filaDestino: int, columnaDestino: int, captura: boolean): Casilla
+        - manejarEnroque(enroqueCorto: boolean, enroqueLargo: boolean, esBlanca: boolean): void
+        + cambiarColorMovimiento(): void
+    }
+
+    class ControladorJuegoE {
+        - tableroBoton: TableroBoton
+        - tablero: Tablero
+        - casillaInicial: Casilla
+        - casillaFinal: Casilla
+        - fichaInicial: Ficha
+        - esPrimerClick: boolean
+        - isBlanca: boolean
+        - captura: boolean
+        - pgnNotation: StringBuilder
+        - moveNumber: int
+        + ControladorJuegoE(tableroBoton: TableroBoton, tablero: Tablero)
+        + gestionarClic(): void
+        - manejarPrimerClick(casilla: Casilla): void
+        - manejarSegundoClick(casilla: Casilla): void
+        - ejecutarMovimiento(): boolean
+        - esMovimientoValido(): boolean
+        - esPromocion(): boolean
+        - manejarPromocion(casilla: Casilla): void
+        - escribirMovimientos(destino: String, tipoFicha: String, isCaptura: boolean): void
+        - actualizarEstado(): void
+        + getPGNNotation(): String
+    }
+
+    class ControladorPrincipal {
+        - marco: JFrame
+        - panelJuego: PanelJuego
+        - menuPanel: MenuPanel
+        - tableroBoton: TableroBoton
+        + ControladorPrincipal(marco: JFrame)
+        + iniciarComponentes(): void
+        + mostrarPanelCargarJuego(): void
+        + mostrarPanelJugar(): void
+    }
+
+    ControladorJuego --> PanelJuego
+    ControladorJuego --> Movimiento
+    ControladorJuego --> Tablero
+    ControladorJuego --> CargarPgn
+    ControladorJuegoE --> TableroBoton
+    ControladorJuegoE --> Tablero
+    ControladorPrincipal --> JFrame
+    ControladorPrincipal --> MenuPanel
+    ControladorPrincipal --> PanelJuego
+    ControladorPrincipal --> TableroBoton
+}
+
+package "vista" {
+    class MenuPanel {
+        - botonCargarPgn: JButton
+        - botonJugar: JButton
+        - fondo: Image
+        - cargarFondo: CargarFondo
+        + MenuPanel(cargarFondo: CargarFondo)
+        + addListenerBotonCargarPgn(listener: ActionListener): void
+        + addListenerBotonJugar(listener: ActionListener): void
+        - customizeButton(button: JButton): void
+        + paintComponent(g: Graphics): void
+    }
+
+
+
+
+
+    class PanelJuego {
+            - tablero: Tablero
+            - cargarIcon: CargarIcon
+            - botonRetroceder: JButton
+            - botonSiguiente: JButton
+            - botonCargarPGN: JButton
+            - fondo: Image
+            - cargarFondo: CargarFondo
+            + PanelJuego(tablero: Tablero, cargarIcon: CargarIcon, cargarFondo: CargarFondo)
+            + addBotonSiguienteListener(listener: ActionListener): void
+            + addBotonRetrocederListener(listener: ActionListener): void
+            + addBotonCargarPGNListener(listener: ActionListener): void
+            + paintComponent(g: Graphics): void
+            + getPreferredSize(): Dimension
+            - cargarArchivoPGN(): void
+            + actualizarVistaTablero(tablero: Tablero): void
+        }
+
+    class TableroBoton {
+            - tablero: Tablero
+            - cargarIcon: CargarIcon
+            - botonesTablero: JButton[8][8]
+            - casilla: Casilla
+            - listener: ActionListener
+            - fondo: Image
+            - cargarFondo: CargarFondo
+            + TableroBoton(tablero: Tablero, cargarIcon: CargarIcon, cargarFondo: CargarFondo)
+            + paintComponent(g: Graphics): void
+            + manejarClickEnCelda(fila: int, col: int): void
+            + addBotonClick(listener: ActionListener): void
+            + getCasillaClick(): Casilla
+            + actualizarVistaTablero(tablero: Tablero): void
+        }
+
+    MenuPanel --> PanelJuego
+    PanelJuego --> TableroBoton
+}
+
+package "funcionalidades" {
+    class CargarFondo {
+        - fondo: Image
+        + setFondo(ruta: String): Image
+    }
+
+    class CargarIcon {
+        - ruta: String
+        + cargarIcon(ruta: String): Image
+    }
+
+    class CargarPgn {
+        - movimientos: List<String>
+        + obtenerMovimientos(nombreArchivo: String): List<String>
+        + imprimirMovimientos(): void
+    }
+}
+
+
+package "resources.imagenes" {
+    note right of Ficha
+        Contiene las imágenes de las piezas del juego
+    end note
+}
+
+@enduml
